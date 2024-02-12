@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Database
+  mysql:
+    image: mysql:8.0.36-debian
+    container_name: ${MYSQL_CONTAINER_NAME}
+    restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_HOST_PORT}:${MYSQL_CONTAINER_PORT}"
+
+  # PHP/Symfony App
+  php-app: 
+    build: 
+      context: ./docker/php-app/
+      dockerfile: Dockerfile
+    container_name: ${PHP_APP_CONTAINER_NAME}
+    restart: always
+    volumes:
+      - ./code:/code
+    environment:
+      MYSQL_USERNAME: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_HOSTNAME: ${MYSQL_CONTAINER_NAME}
+      MYSQL_PORT: ${MYSQL_CONTAINER_PORT}
+    working_dir: /code
+    stdin_open: true
+    tty: true
+    ports:
+      - "${PHP_APP_HOST_PORT}:${PHP_APP_CONTAINER_PORT}"
+
+volumes:
+  mysql-data:
